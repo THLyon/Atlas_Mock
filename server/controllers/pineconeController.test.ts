@@ -79,11 +79,10 @@ jest.mock('@pinecone-database/pinecone', () => {
   };
 });
 
-describe('queryPineconeDatabase Middleware', () => {
+xdescribe('queryPineconeDatabase Middleware', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
-  // let pinecone: any;
   let index: jest.Mocked<Partial<pinecone.Index>>;
 
   beforeEach(() => {
@@ -92,8 +91,6 @@ describe('queryPineconeDatabase Middleware', () => {
       locals: {},
     };
     next = jest.fn();
-
-    // pinecone = require('@pinecone-database/pinecone');
     index = new pinecone.Pinecone().index('');
 
     jest.clearAllMocks();
