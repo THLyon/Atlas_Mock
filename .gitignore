@@ -6,6 +6,7 @@ node_modules/
 
 # environment variables
 .env
+.venv/
 
 # logs
 npm-debug.log*
@@ -22,3 +23,14 @@ coverage/
 offline/*.json
 offline/*.csv
 offline/*.tar.*
+
+#Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc 
+
+# Local artifacts
+uploads/
+chunk_output.json
