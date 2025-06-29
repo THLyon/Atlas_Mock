@@ -13,6 +13,7 @@ import {
 import { queryPineconeDatabase } from './controllers/pineconeController.js';
 import { queryByTitle } from './controllers/mongoController.js';
 // import { logQuery } from './controllers/loggingController.js';
+import { ingestChunks } from './controllers/ingestController';
 
 import { ServerError } from '../types/types.js';
 
@@ -37,6 +38,8 @@ app.post(
     });
   }
 );
+
+app.post('/api/ingest', ingestChunks);
 
 const errorHandler: ErrorRequestHandler = (
   err: ServerError,

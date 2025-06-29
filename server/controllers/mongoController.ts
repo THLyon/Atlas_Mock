@@ -1,4 +1,4 @@
-import { findMovie } from '../models/mongoModel.js';
+import { findLegalCaseByTitle } from '../models/mongoModel.js';
 import { RequestHandler } from 'express';
 import { ServerError } from '../../types/types';
 
@@ -21,10 +21,10 @@ export const queryByTitle: RequestHandler = async (_req, res, next) => {
   }
 
   try {
-    const titleQueryResult = await findMovie(titleToFind);
+    const titleQueryResult = await findLegalCaseByTitle(titleToFind);
     if (!titleQueryResult) return next();
 
-    res.locals.structuredQuery.summaryToEmbed = titleQueryResult.plot;
+    res.locals.structuredQuery.summaryToEmbed = titleQueryResult.summary;
     console.log('titleQueryResult', titleQueryResult);
     // console.log('res.locals.structuredQuery', res.locals.structuredQuery);
     return next();
