@@ -69,37 +69,39 @@ export const queryOpenAIParse: RequestHandler = async (_req, res, next) => {
         filters: {
           type: ['object', 'null'],
           properties: {
-            years: {
-              type: ['object', 'null'],
-              properties: {
-                startYear: { type: ['number', 'null'] },
-                endYear: { type: ['number', 'null'] },
-              },
-              additionalProperties: false,
-              required: ['startYear', 'endYear'],
-            },
-            genre: { type: ['string', 'null'] },
-            director: { type: ['string', 'null'] },
+            jurisdiction: { type: ['string', 'null'] },
+            legalTopic: { type: ['string', 'null'] },
+            courtLevel: { type: ['string', 'null'] },
           },
           additionalProperties: false,
-          required: ['years', 'genre', 'director'],
+          required: ['jurisdiction', 'legalTopic', 'courtLevel'],
         },
       },
       additionalProperties: false,
       required: ['summaryToEmbed', 'titleToFind', 'filters'],
     },
   };
-
+  
   const systemMessage = `
-	You are an expert query parser.
-  Extract any information that should be used to filter the search -- the only valid filters are years, genre, and director.
-  - For "years", extract the start and end years as "startYear" and "endYear". If the user provides only one year, use it as both "startYear" and "endYear".
-	Given a user's query, determine whether they have provided a movie summary to embed, a title to find, or other.
-  - If the user provides a summary to embed, include it in your response as "summaryToEmbed" and do NOT include a "titleToFind".
-  - Else if the user provides a title to find, include it in your response as "titleToFind" and do NOT include a "summaryToEmbed".
-  - If the user provides "other", generate a hypothetical movie summary based on the user's query and include it in your response as "summaryToEmbed" and do NOT include a "titleToFind".
-  Be sure that your response includes EITHER "summaryToEmbed" OR "titleToFind", but not both.
-	`;
+  You are a legal NLP assistant. Given a user's query, determine if they are referencing an existing legal case or providing a summary to embed.
+  
+  You must:
+  - Return EITHER a "titleToFind" (exact case title) OR a "summaryToEmbed" (summary of legal context), but not both.
+  - Parse legal filters into "jurisdiction", "legalTopic", and "courtLevel" where applicable.
+  - If a user provides only a general legal question, generate a hypothetical summary to embed.
+  Ensure output is a strict JSON object matching the provided schema.
+  `;
+  
+  // const systemMessage = `
+	// You are an expert query parser.
+  // Extract any information that should be used to filter the search -- the only valid filters are years, genre, and director.
+  // - For "years", extract the start and end years as "startYear" and "endYear". If the user provides only one year, use it as both "startYear" and "endYear".
+	// Given a user's query, determine whether they have provided a movie summary to embed, a title to find, or other.
+  // - If the user provides a summary to embed, include it in your response as "summaryToEmbed" and do NOT include a "titleToFind".
+  // - Else if the user provides a title to find, include it in your response as "titleToFind" and do NOT include a "summaryToEmbed".
+  // - If the user provides "other", generate a hypothetical movie summary based on the user's query and include it in your response as "summaryToEmbed" and do NOT include a "titleToFind".
+  // Be sure that your response includes EITHER "summaryToEmbed" OR "titleToFind", but not both.
+	// `;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -178,29 +180,28 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     return next(error);
   }
 
-  const movieOptions = pineconeQueryResult
-    .map(
-      (movie, i) =>
-        `'''Option ${i}: ${movie.metadata?.title}: ${movie.metadata?.plot}'''`
-    )
-    .join(', ');
+  const caseOptions = pineconeQueryResult
+  .map((doc, i) =>
+    `'''Option ${i}: ${doc.metadata?.caseTitle}: ${doc.metadata?.summary}'''`
+  ).join(', ');
+
 
   const instructRole = `
-  You are a helpful assistant that recommends movies to users based on their interests.
+  You are a legal assistant that helps interpret legal queries using relevant case summaries.
   `;
   const instructGoal = `
-  When given a user's query and a list of movies, recommend a single movie to the user and include a brief one-sentence description without spoilers.
+  When given a user's query and a list of legal documents or information, respond appropriately to the information based off of the context, information, and context aware chunking.
   `;
   const instructFormat = `
-  Your response should be in the format:
-	"[Movie Title] - [One-sentence description]"
+  "[Case Name] - [One-sentence legal insight or relevance]"
   `;
   const systemMessage = instructRole + instructGoal + instructFormat;
 
   const userMessage = `
-	User request: """I want to watch a movie about: ${userQuery}"""
-	Movie options: """${movieOptions}"""
-	`;
+  User legal request: """${userQuery}"""
+  Relevant legal context options: """${caseOptions}"""
+  `;
+  
 
   try {
     const completion = await openai.chat.completions.create({
@@ -229,7 +230,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     }
 
     // set the response on res.locals
-    res.locals.movieRecommendation = content;
+    res.locals.legalAnswer = content;
     return next();
   } catch (err) {
     const error: ServerError = {

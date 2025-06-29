@@ -1,19 +1,23 @@
 import { Pinecone, QueryOptions } from '@pinecone-database/pinecone';
 
 import { RequestHandler } from 'express';
-import { ServerError, MovieMetadata } from '../../types/types';
+import { ServerError, LegalMetadata } from '../../types/types';
 
 // define TOP_K for Pinecone query
 const TOP_K = 3;
 
 type Filter = {
-  year: { $gte: number; $lte: number };
-  genre: string;
-  director: string;
+  jurisdiction: string;
+  legalTopic: string;
+  courtLevel: string;
 };
 
+//! ==========================
+//!          FIX          
+//! ==========================
+
 const pinecone = new Pinecone();
-const index = pinecone.index<MovieMetadata>('movies');
+const index = pinecone.index<LegalMetadata>('legal-cases');
 
 export const queryPineconeDatabase: RequestHandler = async (
   _req,
@@ -32,28 +36,19 @@ export const queryPineconeDatabase: RequestHandler = async (
     return next(error);
   }
 
-  let yearFilter, genreFilter, directorFilter;
+  let jurisdictionFilter, topicFilter, courtLevelFilter;
 
   if (structuredQuery?.filters) {
-    const { years, genre, director } = structuredQuery.filters;
-    if (years) {
-      yearFilter = {
-        $gte: years.startYear,
-        $lte: years.endYear,
-      };
-    }
-    if (genre) {
-      genreFilter = genre;
-    }
-    if (director) {
-      directorFilter = director;
-    }
+    const { jurisdiction, legalTopic, courtLevel } = structuredQuery.filters;
+    if (jurisdiction) jurisdictionFilter = jurisdiction;
+    if (legalTopic) topicFilter = legalTopic;
+    if (courtLevel) courtLevelFilter = courtLevel;
   }
 
-  const filter: Partial<Filter> = {};
-  if (yearFilter) filter.year = yearFilter;
-  if (genreFilter) filter.genre = genreFilter;
-  if (directorFilter) filter.director = directorFilter;
+    const filter: Partial<Filter> = {};
+    if (jurisdictionFilter) filter.jurisdiction = jurisdictionFilter;
+    if (topicFilter) filter.legalTopic = topicFilter;
+    if (courtLevelFilter) filter.courtLevel = courtLevelFilter;
 
   const databaseQuery: QueryOptions = {
     vector: embedding,
@@ -77,7 +72,8 @@ export const queryPineconeDatabase: RequestHandler = async (
       const { titleToFind } = structuredQuery;
 
       return !titleToFind || 
-        (titleToFind.toLowerCase() !== match.metadata?.title.toLowerCase());
+  (titleToFind.toLowerCase() !== match.metadata?.caseTitle.toLowerCase());
+
     });
 
     return next();

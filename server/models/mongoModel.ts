@@ -22,13 +22,14 @@ async function findMovie(titleToFind: string) {
     await client.connect();
     
     // Get database and collection
-    const movies = client.db('sample_mflix').collection('movies');
+    const legalDocs = client.db('legal_corpus').collection('cases');
 
     // Perform the query
-    const titleQueryResult = await movies.findOne(
-      { title: { $regex: `^${titleToFind}$`, $options: 'i' } },
-      { projection: { _id: 0, plot: 1 } }
+    const titleQueryResult = await legalDocs.findOne(
+      { caseTitle: { $regex: `^${titleToFind}$`, $options: 'i' } },
+      { projection: { _id: 0, summary: 1 } }
     );
+    
 
     console.log(`plot from mongoDB: 
       ${titleQueryResult?.plot}`);

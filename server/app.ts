@@ -33,7 +33,7 @@ app.post(
   queryOpenAIChat,
   (_req, res) => {
     res.status(200).json({
-      movieRecommendation: res.locals.movieRecommendation,
+      legalAnswer: res.locals.legalAnswer,
     });
   }
 );
