@@ -189,6 +189,8 @@ import tiktoken
 import unicodedata
 from docx import Document
 from sentence_transformers import SentenceTransformer, util
+import sys
+sys.stderr = sys.stdout  # to surface Python errors to Node
 
 nltk.download("punkt")
 

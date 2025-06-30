@@ -12,7 +12,7 @@ type Filter = {
 };
 
 const pinecone = new Pinecone();
-const index = pinecone.index<LegalMetadata>('legal-cases');
+const index = pinecone.index<LegalMetadata>('atlas-mock');
 
 // Determines what granularity to search based on query length
 function selectGranularity(query: string): 'sentence' | 'paragraph' | 'section' {

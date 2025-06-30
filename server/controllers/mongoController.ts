@@ -26,7 +26,6 @@ export const queryByTitle: RequestHandler = async (_req, res, next) => {
 
     res.locals.structuredQuery.summaryToEmbed = titleQueryResult.summary;
     console.log('titleQueryResult', titleQueryResult);
-    // console.log('res.locals.structuredQuery', res.locals.structuredQuery);
     return next();
   } catch (err) {
     const error: ServerError = {
