@@ -114,10 +114,10 @@
 // };
 
 import { Request, Response } from 'express';
-import { getEmbeddingForText } from '../services/embeddingService';
-import { upsertChunks } from '../services/pineconeService';
+import { getEmbeddingForText } from '../services/embeddingService.ts';
+import { upsertChunks } from '../services/pineconeService.ts';
 
-export const ingestChunks = async (req: Request, res: Response) => {
+export const ingestChunks = async (req: Request, res: Response): Promise<void> => {
   try {
     const chunks = req.body.chunks;
 
@@ -132,13 +132,16 @@ export const ingestChunks = async (req: Request, res: Response) => {
       })
     );
 
-    await upsertChunks(embeddedChunks);
+    await upsertChunks(req.body.documentId, embeddedChunks);
 
-    return res.status(200).json({
+
+    res.status(200).json({
       message: 'Chunks embedded and ingested into Pinecone successfully',
     });
+    return; 
   } catch (error) {
     console.error('Error during chunk ingestion:', error);
-    return res.status(500).json({ error: 'Chunk ingestion failed' });
+    res.status(500).json({ error: 'Chunk ingestion failed' });
+    return; 
   }
 };

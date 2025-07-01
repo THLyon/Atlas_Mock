@@ -1,30 +1,30 @@
-import OpenAI from 'openai';
-import { RequestHandler } from 'express';
+import { RequestHandler, Request, Response, NextFunction } from 'express';
 import { ServerError, StructuredQuery } from '../../types/types';
-import { compressChunks } from '../services/promptCompressor';
-import { getEmbeddingForText } from '../services/embeddingService';
-import { extractStructuredQuery } from '../services/structuredQueryService';
+import { compressChunks } from '../services/promptCompressor.ts';
+import { getEmbeddingForText } from '../services/embeddingService.ts';
+import { extractStructuredQuery } from '../services/structuredQueryService.ts';
+import { chatWithOpenAI } from '../services/openaiChatService.ts';
 
-const openai = new OpenAI();
 
-export const queryOpenAIEmbedding = async (req: Request, res: Response) => {
+export const queryOpenAIEmbedding: RequestHandler = async (req, res, next) => {
   try {
     const userQuery = req.body.userQuery;
     const structuredQuery = await extractStructuredQuery(userQuery);
     const summaryToEmbed = structuredQuery.summaryToEmbed || userQuery;
 
     const embedding = await getEmbeddingForText(summaryToEmbed);
+
     res.locals.embedding = embedding;
     res.locals.structuredQuery = structuredQuery;
 
-    return res.status(200).json({
-      message: 'Query embedded successfully',
-      embedding,
-      structuredQuery,
-    });
+    next();
   } catch (error) {
     console.error('Error querying OpenAI embedding:', error);
-    return res.status(500).json({ error: 'Failed to generate embedding' });
+    next({
+      log: 'queryOpenAIEmbedding error: ' + error,
+      status: 500,
+      message: { err: 'Failed to generate embedding' },
+    });
   }
 };
 
@@ -69,17 +69,10 @@ You are a legal NLP assistant. Given a user's query, determine if they are refer
   `;
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: userQuery },
-      ],
-      temperature: 0.7,
-      response_format: {
-        type: 'json_schema',
-        json_schema: responseSchema,
-      },
+    const completion = await chatWithOpenAI({
+      systemPrompt: systemMessage,
+      userPrompt: userQuery,
+      responseFormat: { type: 'json_schema', json_schema: responseSchema },
       n: 3,
     });
 
@@ -98,7 +91,7 @@ You are a legal NLP assistant. Given a user's query, determine if they are refer
     res.locals.allStructuredQueries = completion.choices.map((c) =>
       JSON.parse(c.message.content || '{}')
     );
-    return next();
+    next();
   } catch (err) {
     return next({
       log: `queryOpenAIParse: ${err}`,
@@ -118,7 +111,6 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     });
   }
 
-  // Defensive: ensure all text chunks are present
   const texts = hybridResults.map((r: any) => r.text).filter(Boolean);
   let compressed = '';
 
@@ -144,13 +136,9 @@ Relevant legal summary: """${compressed}"""
   `.trim();
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.7,
+    const completion = await chatWithOpenAI({
+      systemPrompt: systemMessage,
+      userPrompt: userMessage,
     });
 
     const { content } = completion.choices[0].message;

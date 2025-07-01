@@ -4,8 +4,9 @@ import path from 'path';
 export const dynamicChunkText = (text: string, query: string): Promise<string[]> => {
   return new Promise((resolve, reject) => {
     const scriptPath = path.join(__dirname, '../../python/dynamic_chunker.py');
+    const pythonProcess = spawn('python3', [scriptPath]);
 
-    const pythonProcess = spawn('python3', [scriptPath, '--text', text, '--query', query]);
+    const payload = JSON.stringify({ text, query });
 
     let output = '';
     pythonProcess.stdout.on('data', (data) => {
@@ -25,5 +26,8 @@ export const dynamicChunkText = (text: string, query: string): Promise<string[]>
         reject(new Error('Failed to parse Python JSON output: ' + output));
       }
     });
+
+    pythonProcess.stdin.write(payload);
+    pythonProcess.stdin.end();
   });
 };

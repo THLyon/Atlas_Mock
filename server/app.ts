@@ -17,7 +17,7 @@ import { queryByTitle } from './controllers/mongoController.ts';
 import { ingestChunks } from './controllers/ingestController.ts';
 import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
-import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController'
+import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController.ts'
 
 
 import { ServerError } from '../types/types';
@@ -56,11 +56,9 @@ app.post('/dynamic-query', async (req: Request, res: Response, next) => {
   }
 });
 
-// app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
-//   console.log('[final handler] Should not reach here unless next() was called again.');
-//   res.status(200).json({ msg: 'Made it through all middlewares' });
-// });
-app.post('/api/ingest', chunkAndEmbed, ingestChunks);
+app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
+  res.status(200).json({ msg: 'Made it through all middlewares' });
+});
 
 
 
@@ -75,7 +73,7 @@ app.get('/debug-ingest', async (_req, res) => {
       }),
     } as unknown as Response;
     const next = () => {};
-    await ingestChunks(fakeReq, fakeRes, next);
+    await ingestChunks(fakeReq, fakeRes);
   } catch (err) {
     console.error('Manual run failed:', err);
     res.status(500).json({ error: 'Manual run failed' });
@@ -88,6 +86,7 @@ const errorHandler: ErrorRequestHandler = (
   res,
   _next
 ) => {
+  console.error('Caught in errorHandler:', err); 
   const defaultErr: ServerError = {
     log: 'Express error handler caught unknown middleware error',
     status: 500,

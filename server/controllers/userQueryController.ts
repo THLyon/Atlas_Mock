@@ -27,5 +27,5 @@ export const parseUserQuery: RequestHandler = async (
   }
 
   res.locals.userQuery = userQuery;
-  return next();
+  next();
 };

@@ -8,7 +8,9 @@
     "start": "nodemon --exec node --no-warnings=ExperimentalWarning --loader ts-node/esm ./server/server.ts & webpack-dev-server --hot --progress --color",
     "server": "nodemon --exec node --no-warnings=ExperimentalWarning --loader ts-node/esm ./server/server.ts",
     "test": "jest",
-    "upsert-batch": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./offline/upsert-batch.ts"
+    "upsert-batch": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./offline/upsert-batch.ts",
+    "chunk:static": "python python/smart_chunker.py --mode static --input ./docs/sample.docx --output ./chunks/static.json",
+    "chunk:dynamic": "python python/smart_chunker.py --mode dynamic --input ./docs/sample.docx --query \"termination clauses\" --topK 3 --output ./chunks/dynamic.json"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +24,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.8.6",

@@ -27,7 +27,7 @@ export const queryByTitle: RequestHandler = async (_req, res, next) => {
 
     res.locals.structuredQuery.summaryToEmbed = titleQueryResult.summary;
     console.log('titleQueryResult', titleQueryResult);
-    return next();
+    next();
   } catch (err) {
     const error: ServerError = {
       log: `queryMongoDatabase: ${err}`,

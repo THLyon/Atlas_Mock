@@ -13,3 +13,14 @@ export const searchByEmbedding = async (
   });
   return result.matches || [];
 };
+
+export const upsertChunks = async (
+  namespace: string,
+  vectors: {
+    id: string;
+    values: number[];
+    metadata: Record<string, any>;
+  }[]
+) => {
+  await index.namespace(namespace).upsert(vectors); 
+};

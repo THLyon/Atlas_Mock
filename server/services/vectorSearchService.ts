@@ -1,5 +1,5 @@
-import { searchByEmbedding } from './pineconeService';
-import { getEmbeddingForText } from './embeddingService';
+import { searchByEmbedding } from './pineconeService.ts';
+import { getEmbeddingForText } from './embeddingService.ts';
 
 export const embedChunksAndSearch = async (
   query: string,

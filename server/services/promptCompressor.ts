@@ -1,5 +1,4 @@
-import OpenAI from 'openai';
-const openai = new OpenAI();
+import { openai } from '../utils/openaiClient.ts';
 
 export const compressChunks = async (chunks: string[]): Promise<string> => {
   const joined = chunks.join('\n\n');

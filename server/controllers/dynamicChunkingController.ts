@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { getRawSectionById } from '../services/mongoService';
-import { dynamicChunkText } from '../services/dynamicChunker';
-import { classifyQueryIntent } from '../services/queryClassifier';
-import { embedChunksAndSearch } from '../services/vectorSearchService';
+import { getRawSectionById } from '../services/mongoService.ts';
+import { dynamicChunkText } from '../services/dynamicChunker.ts';
+import { classifyQueryIntent } from '../services/queryClassifier.ts';
+import { embedChunksAndSearch } from '../services/vectorSearchService.ts';
 
 export const handleQueryWithDynamicChunking = async (req: Request, res: Response) => {
   try {

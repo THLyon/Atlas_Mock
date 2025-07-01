@@ -1,6 +1,4 @@
-import OpenAI from 'openai';
-
-const openai = new OpenAI();
+import { openai } from '../utils/openaiClient.ts';
 
 export const getEmbeddingForText = async (text: string): Promise<number[]> => {
   const embeddingResult = await openai.embeddings.create({
