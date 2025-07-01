@@ -162,7 +162,7 @@ export const queryOpenAIParse: RequestHandler = async (_req, res, next) => {
 };
 
 export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
-  const { userQuery, pineconeQueryResult } = res.locals;
+  const { userQuery, hybridResults } = res.locals;
   if (!userQuery) {
     const error: ServerError = {
       log: 'queryOpenAIChat did not receive a user query',
@@ -171,7 +171,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     };
     return next(error);
   }
-  if (!pineconeQueryResult) {
+  if (!hybridResults) {
     const error: ServerError = {
       log: 'queryOpenAIChat did not receive pinecone query results',
       status: 500,
@@ -180,10 +180,9 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     return next(error);
   }
 
-  const caseOptions = pineconeQueryResult
-  .map((doc, i) =>
-    `'''Option ${i}: ${doc.metadata?.caseTitle}: ${doc.metadata?.summary}'''`
-  ).join(', ');
+  const caseOptions = hybridResults.map((doc: any, i: number) =>
+  `'''Option ${i} (${doc.source}): ${doc.metadata?.caseTitle || 'Untitled'} - ${doc.text || doc.metadata?.summary}'''`
+).join('\n');
 
 
   const instructRole = `

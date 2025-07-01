@@ -1,24 +1,16 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
-    "sourceMap": true,
+    "target": "ES2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "target": "ES2017",
-    "allowJs": true,
-    "jsx": "react",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
-  "ts-node": {
-    "esm": true,
-    "transpileOnly": true,
-    "compilerOptions": {
-      "moduleResolution": "node"
-    }
-  },
-  "include": ["client/**/*", "server/**/*", "types/*.ts"],
+  "include": ["client/**/*", "server/**/*", "types/*.ts", "scripts/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

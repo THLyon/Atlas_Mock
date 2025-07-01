@@ -5,19 +5,20 @@ import fs from 'fs';
 
 // import { addReqId } from './logger.js';
 
-import { parseUserQuery } from './controllers/userQueryController.js';
+import { parseUserQuery } from './controllers/userQueryController.ts';
 import {
   queryOpenAIParse,
   queryOpenAIEmbedding,
   queryOpenAIChat,
-} from './controllers/openaiController.js';
-import { queryPineconeDatabase } from './controllers/pineconeController.js';
-import { queryByTitle } from './controllers/mongoController.js';
+} from './controllers/openaiController.ts';
+import { queryPineconeDatabase } from './controllers/pineconeController.ts';
+import { queryByTitle } from './controllers/mongoController.ts';
 // import { logQuery } from './controllers/loggingController.js';
-import { ingestChunks } from './controllers/ingestController.js';
-import {chunkAndEmbed} from './controllers/chunkAndEmbedController.js'
+import { ingestChunks } from './controllers/ingestController.ts';
+import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
+import {hybridQueryController} from './controllers/hybridQueryController.ts'
 
-import { ServerError } from '../types/types.js';
+import { ServerError } from '../types/types';
 
 const app = express();
 
@@ -36,8 +37,8 @@ app.post(
   queryOpenAIParse,
   queryByTitle,
   queryOpenAIEmbedding,
-  queryPineconeDatabase,
-  queryOpenAIChat,
+  hybridQueryController,
+  queryOpenAIChat,  
   (_req, res) => {
     res.status(200).json({
       legalAnswer: res.locals.legalAnswer,

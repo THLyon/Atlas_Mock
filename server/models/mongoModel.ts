@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
+import { MongoClient, ServerApiVersion, ObjectId, Db } from 'mongodb';
 
 if (!process.env.MONGO_URI) {
   throw new Error('MONGO_URI environment variable is not set');
@@ -9,15 +9,24 @@ const client = new MongoClient(process.env.MONGO_URI!, {
   tlsAllowInvalidCertificates: false,
   serverApi: {
     version: ServerApiVersion.v1,
-    strict: true,
+    strict: false,
     deprecationErrors: true,
   },
 });
 
-async function findLegalCaseByTitle(titleToFind: string) {
+let cachedDb: Db | null = null;
+
+export async function getDb(): Promise<Db> {
+  if (cachedDb) return cachedDb;
+  await client.connect();
+  cachedDb = client.db('legal_corpus');
+  return cachedDb;
+}
+
+export async function findLegalCaseByTitle(titleToFind: string) {
   try {
-    await client.connect();
-    const legalDocs = client.db('legal_corpus').collection('cases');
+    const db = await getDb();
+    const legalDocs = db.collection('chunks');
 
     const result = await legalDocs.findOne(
       { caseTitle: { $regex: `^${titleToFind}$`, $options: 'i' } },
@@ -28,22 +37,7 @@ async function findLegalCaseByTitle(titleToFind: string) {
   } catch (error) {
     console.error('MongoDB error:', error);
     throw error;
-  } finally {
-    await client.close();
   }
 }
 
-async function connectToDatabase() {
-  try {
-    await client.connect();
-    await client.db('admin').command({ ping: 1 });
-  } catch (err) {
-    console.error('MongoDB connection error:', err);
-  } finally {
-    await client.close();
-  }
-}
-
-connectToDatabase();
-
-export { ObjectId, findLegalCaseByTitle };
+export { ObjectId };

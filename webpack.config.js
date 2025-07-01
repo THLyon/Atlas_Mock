@@ -34,21 +34,18 @@ export default {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
-        loader: 'babel-loader',
-        exclude: /node_modules/,
-        options: {
-          plugins: ['react-refresh/babel'],
+        test: /\.tsx?$/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true
+          }
         },
+        exclude: /node_modules/,
       },
       {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
-      },
-      {
-        test: /\.ts(x)?$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
       },
     ],
   },
