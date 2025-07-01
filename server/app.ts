@@ -17,6 +17,8 @@ import { queryByTitle } from './controllers/mongoController.ts';
 import { ingestChunks } from './controllers/ingestController.ts';
 import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
+import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController'
+
 
 import { ServerError } from '../types/types';
 
@@ -45,6 +47,14 @@ app.post(
     });
   }
 );
+
+app.post('/dynamic-query', async (req: Request, res: Response, next) => {
+  try {
+    await handleQueryWithDynamicChunking(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
 
 // app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
 //   console.log('[final handler] Should not reach here unless next() was called again.');

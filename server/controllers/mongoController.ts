@@ -55,5 +55,3 @@ export async function queryBM25(query: string) {
     }));
     
 }
-
-

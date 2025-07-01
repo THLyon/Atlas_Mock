@@ -73,3 +73,4 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
     return next(error);
   }
 };
+

@@ -46,6 +46,7 @@ export default {
       {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
+      
       },
     ],
   },
