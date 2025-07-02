@@ -5,7 +5,7 @@ import { upsertChunksToMongo, upsertRawSectionsToMongo } from '../services/mongo
 
 const openai = new OpenAI();
 const pinecone = new Pinecone();
-const index = pinecone.index('atlas-mock'); // 🔥 Updated namespace
+const index = pinecone.index('atlas-mock'); // Updated namespace
 
 const BATCH_SIZE = 200;
 
@@ -43,7 +43,7 @@ export const ingestChunks = async (
             input: chunk.text,
           });
 
-          console.log(`[ingestChunks] ✅ Embedded chunk ${i}`);
+          console.log(`[ingestChunks] Embedded chunk ${i}`);
 
           return {
             ...chunk,
@@ -51,7 +51,7 @@ export const ingestChunks = async (
           };
         } catch (embedErr) {
           const e = embedErr as any;
-          console.error(`[ingestChunks] ❌ Embedding error (chunk ${i}):`, e?.response?.data || e?.message || e);
+          console.error(`[ingestChunks] Embedding error (chunk ${i}):`, e?.response?.data || e?.message || e);
           return null;
         }
       })
@@ -90,14 +90,14 @@ export const ingestChunks = async (
     // 🔹 Upsert vectors to Pinecone
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
-      console.log(`[ingestChunks] 🚀 Upserting batch ${i + 1}/${batches.length} (${batch.length} items)...`);
+      console.log(`[ingestChunks] Upserting batch ${i + 1}/${batches.length} (${batch.length} items)...`);
 
       try {
-        await index.namespace('sample_LPA').upsert(batch); // 👈 Save under 'chunks' namespace
-        console.log(`[ingestChunks] ✅ Batch ${i + 1} upserted.`);
+        await index.namespace('sample_LPA').upsert(batch);
+        console.log(`[ingestChunks] Batch ${i + 1} upserted.`);
       } catch (upsertErr) {
         const e = upsertErr as any;
-        console.error(`[ingestChunks] ❌ Pinecone upsert failed:`, e?.response?.data || e?.message || e);
+        console.error(`[ingestChunks] Pinecone upsert failed:`, e?.response?.data || e?.message || e);
         res.status(500).json({
           error: 'Upsert to Pinecone failed',
           detail: e?.response?.data || e?.message || e,
@@ -109,54 +109,20 @@ export const ingestChunks = async (
     // 🔹 Upsert both chunks and raw sections to MongoDB
     await upsertRawSectionsToMongo(documentId, rawSections);
     await upsertChunksToMongo(documentId, validChunks);
-    console.log('[ingestChunks] ✅ Chunks also upserted into MongoDB');
+    console.log('[ingestChunks] Chunks also upserted into MongoDB');
 
     if (Array.isArray(rawSections) && rawSections.length > 0) {
       await upsertRawSectionsToMongo(documentId, rawSections);
-      console.log('[ingestChunks] ✅ Raw sections upserted into MongoDB');
+      console.log('[ingestChunks] Raw sections upserted into MongoDB');
     }
 
     res.status(200).json({ message: 'Chunks embedded & stored' });
   } catch (fatalErr) {
     const e = fatalErr as any;
-    console.error('[ingestChunks] ❌ Fatal error:', e?.message || e);
+    console.error('[ingestChunks] Fatal error:', e?.message || e);
     res.status(500).json({
       error: 'Fatal error in ingestChunks',
       detail: e?.message || e,
     });
   }
 };
-
-
-// import { Request, Response } from 'express';
-// import { getEmbeddingForText } from '../services/embeddingService.ts';
-// import { upsertChunks } from '../services/pineconeService.ts';
-
-// export const ingestChunks = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const chunks = req.body.chunks;
-
-//     const embeddedChunks = await Promise.all(
-//       chunks.map(async (chunk: any) => {
-//         const embedding = await getEmbeddingForText(chunk.text);
-//         return {
-//           id: chunk.id,
-//           values: embedding,
-//           metadata: chunk.metadata,
-//         };
-//       })
-//     );
-
-//     await upsertChunks(req.body.documentId, embeddedChunks);
-
-
-//     res.status(200).json({
-//       message: 'Chunks embedded and ingested into Pinecone successfully',
-//     });
-//     return; 
-//   } catch (error) {
-//     console.error('Error during chunk ingestion:', error);
-//     res.status(500).json({ error: 'Chunk ingestion failed' });
-//     return; 
-//   }
-// };

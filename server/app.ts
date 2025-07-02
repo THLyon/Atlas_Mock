@@ -19,6 +19,8 @@ import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
 import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController.ts'
 import { ensureTextIndexOnChunks } from './models/mongoModel.ts';
+import { maybeDynamicChunking } from './controllers/dynamicChunkingMiddleware.ts';
+
 
 
 import { ServerError } from '../types/types';
@@ -37,10 +39,11 @@ app.get('/', (_req, res) => {
 
 app.post(
   '/api',
-  parseUserQuery,        // <-- pulls `userQuery` and stores in `res.locals`
-  queryOpenAIParse,      // <-- parses query into summary vs. title + filters, extracts filter metadata and resolves summary vs. title
-  queryByTitle,          // <-- resolves case summaries if title exists
-  queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, routes embedding level based on input length
+  parseUserQuery,        // <-- Extracts userQuery
+  queryOpenAIParse,      // <-- Classifies: parses query into summary vs. title + filters, extracts filter metadata and resolves summary vs. title
+  queryByTitle,          // <-- Pulls case summaries if title exists
+  queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, Intelligent embedding level based on input length
+  maybeDynamicChunking,  // <-- Dynamic chunking happens here if needed
   hybridQueryController, // <-- combines BM25 + Pinecone (dense + sparse)
   queryOpenAIChat,       // <-- runs GPT-4o with compressed prompt for final response, compressChunks() summarizes top-k chunks before chat completion
   (_req, res) => {
@@ -106,49 +109,3 @@ const errorHandler: ErrorRequestHandler = (
 app.use(errorHandler);
 
 export default app;
-
-
-
-
-
-
-
-
-
-
-// // server/app.ts
-// import express from 'express';
-// import cors from 'cors';
-// import bodyParser from 'body-parser';
-// import {chunkAndEmbed} from './controllers/chunkAndEmbedController.js';
-// import { ingestChunks } from './controllers/ingestController.js';
-
-// const app = express();
-// app.use(cors());
-// app.use(bodyParser.json());
-
-// app.post('/api/ingest', chunkAndEmbed, ingestChunks);
-
-// // debug-ingest route (optional)
-// import fs from 'fs';
-// import { Request, Response } from 'express';
-
-// app.get('/debug-ingest', async (_req, res) => {
-//   try {
-//     const raw = fs.readFileSync('./flattened_chunks.json', 'utf-8');
-//     const chunks = JSON.parse(raw);
-//     const fakeReq = { body: { chunks, documentId: 'debug-123' } } as Request;
-//     const fakeRes = {
-//       status: (code: number) => ({
-//         json: (payload: any) => res.status(code).json(payload),
-//       }),
-//     } as unknown as Response;
-//     const next = () => {};
-//     await ingestChunks(fakeReq, fakeRes, next);
-//   } catch (err) {
-//     console.error('Manual run failed:', err);
-//     res.status(500).json({ error: 'Manual run failed' });
-//   }
-// });
-
-// export default app;
