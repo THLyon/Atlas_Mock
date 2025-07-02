@@ -148,11 +148,19 @@ def link_chunks(chunks):
     return chunks
 
 def save_flat_chunks(sentences, paragraphs, sections, output_file="flattened_chunks.json"):
-    all_chunks = sentences + paragraphs + sections
-    all_chunks = link_chunks(all_chunks)  # 🔥 Full global linkage
+    all_chunks = sentences + paragraphs
+    all_chunks = link_chunks(all_chunks + sections)  # Link everything together
+
+    output = {
+        "documentId": "sample_LPA",  # You can make this dynamic if needed
+        "chunks": all_chunks,
+        "rawSections": sections
+    }
+
     with open(output_file, "w") as f:
-        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
-    print(f"✅ Saved {len(all_chunks)} linked chunks to {output_file}")
+        json.dump(output, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ Saved {len(all_chunks)} chunks and {len(sections)} raw sections to {output_file}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

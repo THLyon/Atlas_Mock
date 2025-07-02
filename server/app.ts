@@ -4,7 +4,7 @@ import 'dotenv/config';
 import fs from 'fs';
 
 // import { addReqId } from './logger.js';
-
+import 'dotenv/config';
 import { parseUserQuery } from './controllers/userQueryController.ts';
 import {
   queryOpenAIParse,
@@ -18,11 +18,13 @@ import { ingestChunks } from './controllers/ingestController.ts';
 import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
 import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController.ts'
+import { ensureTextIndexOnChunks } from './models/mongoModel.ts';
 
 
 import { ServerError } from '../types/types';
 
 const app = express();
+ensureTextIndexOnChunks().catch(console.error);
 
 // app.use(addReqId);
 
@@ -65,15 +67,19 @@ app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
 app.get('/debug-ingest', async (_req, res) => {
   try {
     const raw = fs.readFileSync('./flattened_chunks.json', 'utf-8');
-    const chunks = JSON.parse(raw);
-    const fakeReq = { body: { chunks, documentId: 'sample_LPA' } } as Request;
+    const { chunks, rawSections, documentId } = JSON.parse(raw);
+    
+    const fakeReq = {
+      body: { chunks, rawSections, documentId },
+    } as Request;
+
     const fakeRes = {
       status: (code: number) => ({
         json: (payload: any) => res.status(code).json(payload),
       }),
     } as unknown as Response;
-    const next = () => {};
-    await ingestChunks(fakeReq, fakeRes);
+
+    await ingestChunks(fakeReq, fakeRes, () => {});
   } catch (err) {
     console.error('Manual run failed:', err);
     res.status(500).json({ error: 'Manual run failed' });

@@ -14,18 +14,22 @@ export const hybridQueryController: RequestHandler = async (req, res, next) => {
 
   try {
     const [bm25Results, pineconeResults] = await Promise.all([
-      queryBM25(userQuery),
+      queryBM25(userQuery), // returns objects with .source = 'sparse'
       (async () => {
         await queryPineconeDatabase(req, res, () => {});
-        return res.locals.pineconeQueryResult || [];
+        const pineconeRaw = res.locals.pineconeQueryResult || [];
+        return pineconeRaw.map((r: any) => ({
+          ...r,
+          source: 'dense', // 🧠 normalize Pinecone results
+        }));
       })(),
     ]);
 
-    // Normalize and merge results (you can deduplicate if needed)
     const combinedResults = [...bm25Results, ...pineconeResults];
+    console.log(`[Hybrid Retrieval] BM25 results: ${bm25Results.length}, Pinecone results: ${pineconeResults.length}`);
 
-    // Optional: sort or re-rank
     const sorted = combinedResults.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    console.log(`[Hybrid Retrieval] Top result sources:`, sorted.map(r => r.source || 'unknown').slice(0, 3));
 
     res.locals.hybridResults = sorted;
     return next();

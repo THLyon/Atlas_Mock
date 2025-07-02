@@ -35,6 +35,7 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
 
   const queryText = structuredQuery?.summaryToEmbed || userQuery || '';
   const granularity = selectGranularity(queryText);
+  console.log(`[Granularity Selection] Using: ${granularity}-level embeddings for query length: ${queryText.length}`);
 
   const filter: Filter = { type: granularity };
 
@@ -46,22 +47,22 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
     if (courtLevel) filter.courtLevel = courtLevel;
   }
 
-  const queryOptions: QueryOptions = {
-    vector: embedding,
-    topK: TOP_K,
-    includeMetadata: true,
-    filter,
-  };
-
   try {
-    const result = await index.query(queryOptions);
-
+    const namespace = structuredQuery?.documentNamespace || 'sample_LPA';
+  
+    const result = await index.namespace(namespace).query({
+      vector: embedding,
+      topK: TOP_K,
+      includeMetadata: true,
+      filter,
+    });
+  
     const matches = result.matches.filter((match) => {
       const { titleToFind } = structuredQuery || {};
       if (!titleToFind) return true;
       return match.metadata?.caseTitle?.toLowerCase() !== titleToFind.toLowerCase();
     });
-
+  
     res.locals.pineconeQueryResult = matches;
     return next();
   } catch (err) {
@@ -72,5 +73,6 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
     };
     return next(error);
   }
+  
 };
 

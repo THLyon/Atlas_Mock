@@ -115,6 +115,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   let compressed = '';
 
   try {
+    console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
     compressed = await compressChunks(texts);
   } catch (err) {
     return next({
@@ -149,7 +150,7 @@ Relevant legal summary: """${compressed}"""
         message: { err: 'OpenAI did not return a valid chat response' },
       });
     }
-
+    console.log(`[OpenAI Chat Response] Final legal insight:\n${content}`);
     res.locals.legalAnswer = content;
     return next();
   } catch (err) {
