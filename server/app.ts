@@ -19,6 +19,8 @@ import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
 import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController.ts'
 import { ensureTextIndexOnChunks } from './models/mongoModel.ts';
+import { maybeDynamicChunking } from './controllers/dynamicChunkingMiddleware.ts';
+
 
 
 import { ServerError } from '../types/types';
@@ -41,6 +43,7 @@ app.post(
   queryOpenAIParse,      // <-- parses query into summary vs. title + filters, extracts filter metadata and resolves summary vs. title
   queryByTitle,          // <-- resolves case summaries if title exists
   queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, routes embedding level based on input length
+  maybeDynamicChunking,  // <-- Dynamic chunking happens here if needed
   hybridQueryController, // <-- combines BM25 + Pinecone (dense + sparse)
   queryOpenAIChat,       // <-- runs GPT-4o with compressed prompt for final response, compressChunks() summarizes top-k chunks before chat completion
   (_req, res) => {
