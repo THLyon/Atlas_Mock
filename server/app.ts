@@ -37,12 +37,12 @@ app.get('/', (_req, res) => {
 
 app.post(
   '/api',
-  parseUserQuery,
-  queryOpenAIParse,
-  queryByTitle,
-  queryOpenAIEmbedding,
-  hybridQueryController,
-  queryOpenAIChat,  
+  parseUserQuery,        // <-- pulls `userQuery` and stores in `res.locals`
+  queryOpenAIParse,      // <-- parses query into summary vs. title + filters, extracts filter metadata and resolves summary vs. title
+  queryByTitle,          // <-- resolves case summaries if title exists
+  queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, routes embedding level based on input length
+  hybridQueryController, // <-- combines BM25 + Pinecone (dense + sparse)
+  queryOpenAIChat,       // <-- runs GPT-4o with compressed prompt for final response, compressChunks() summarizes top-k chunks before chat completion
   (_req, res) => {
     res.status(200).json({
       legalAnswer: res.locals.legalAnswer,
@@ -52,7 +52,7 @@ app.post(
 
 app.post('/dynamic-query', async (req: Request, res: Response, next) => {
   try {
-    await handleQueryWithDynamicChunking(req, res);
+    await handleQueryWithDynamicChunking(req, res); // <-- dynamically chunks section based on query & intent, / <-- routes based on `definition` | `summary` | `broad`
   } catch (err) {
     next(err);
   }

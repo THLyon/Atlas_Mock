@@ -161,3 +161,4 @@ Relevant legal summary: """${compressed}"""
     });
   }
 };
+
