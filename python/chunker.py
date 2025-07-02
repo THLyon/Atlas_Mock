@@ -152,7 +152,7 @@ def save_flat_chunks(sentences, paragraphs, sections, output_file="flattened_chu
     all_chunks = link_chunks(all_chunks + sections)  # Link everything together
 
     output = {
-        "documentId": "sample_LPA",  # You can make this dynamic if needed
+        "documentId": "sample_LPA",  # can make this dynamic when needed
         "chunks": all_chunks,
         "rawSections": sections
     }
@@ -160,7 +160,7 @@ def save_flat_chunks(sentences, paragraphs, sections, output_file="flattened_chu
     with open(output_file, "w") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Saved {len(all_chunks)} chunks and {len(sections)} raw sections to {output_file}")
+    print(f" Saved {len(all_chunks)} chunks and {len(sections)} raw sections to {output_file}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
     file_path = sys.argv[1]
     raw_text = load_docx(file_path)
-    print(f"📄 Loaded {len(raw_text)} characters from {file_path}")
+    print(f" Loaded {len(raw_text)} characters from {file_path}")
 
     try:
         sentences = semantic_chunk_sentences(raw_text)
@@ -177,4 +177,4 @@ if __name__ == "__main__":
         sections = group_paragraphs_to_sections(paragraphs)
         save_flat_chunks(sentences, paragraphs, sections)
     except Exception as e:
-        print("❌ Error during chunking:", e)
+        print("Error during chunking:", e)

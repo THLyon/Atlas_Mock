@@ -20,7 +20,7 @@ export const hybridQueryController: RequestHandler = async (req, res, next) => {
         const pineconeRaw = res.locals.pineconeQueryResult || [];
         return pineconeRaw.map((r: any) => ({
           ...r,
-          source: 'dense', // 🧠 normalize Pinecone results
+          source: 'dense', //  normalize Pinecone results
         }));
       })(),
     ]);

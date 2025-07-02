@@ -1,28 +1,3 @@
-# import sys
-# import json
-# from dynamic_chunker_core import dynamic_chunk_on_query  # import your core logic
-
-# def main():
-#     try:
-#         input_data = sys.stdin.read()
-#         parsed = json.loads(input_data)
-
-#         text = parsed.get("text", "")
-#         query = parsed.get("query", "")
-
-#         result = dynamic_chunk_on_query(text, query)
-
-#         print(json.dumps(result))  # MUST be a valid JSON object
-#         sys.stdout.flush()
-
-#     except Exception as e:
-#         print(f"[dynamic_chunker] Error: {e}", file=sys.stderr)
-#         sys.exit(1)
-
-# if __name__ == '__main__':
-#     main()
-
-
 import sys
 import json
 import argparse
