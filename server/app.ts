@@ -42,9 +42,9 @@ app.post(
   parseUserQuery,        // <-- Extracts user query
   queryOpenAIParse,      // <-- Classifies: parses query intent (summary vs. title) + filters, extracts filter metadata and resolves (e.g., parties, clauses)
   queryByTitle,          // <-- Pulls case summaries if title exists; fetches from MongoDB via BM25
-  queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, Intelligent embedding level based on input length
-  maybeDynamicChunking,  // <-- Dynamic chunking happens here if needed
-  hybridQueryController, // <-- combines BM25 + Pinecone (dense + sparse)
+  queryOpenAIEmbedding,  // <-- Intelligent embedding level based on input length & complexity; generates embedding for sentence/para/section
+  maybeDynamicChunking,  // <-- Dynamic Chunking Middleware: conditionally chunks Raw text (mongo) if intent is broad and sectionId is specified, dynamically re-chunks section in real-time
+  hybridQueryController, // <-- Performs hybrid retrieval: combines BM25 + Pinecone (dense + sparse)
   queryOpenAIChat,       // <-- runs GPT-4o with compressed prompt for final response, compressChunks() summarizes top-k chunks before chat completion
   (_req, res) => {
     res.status(200).json({
