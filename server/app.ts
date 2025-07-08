@@ -39,9 +39,9 @@ app.get('/', (_req, res) => {
 
 app.post(
   '/api',
-  parseUserQuery,        // <-- Extracts userQuery
-  queryOpenAIParse,      // <-- Classifies: parses query into summary vs. title + filters, extracts filter metadata and resolves summary vs. title
-  queryByTitle,          // <-- Pulls case summaries if title exists
+  parseUserQuery,        // <-- Extracts user query
+  queryOpenAIParse,      // <-- Classifies: parses query intent (summary vs. title) + filters, extracts filter metadata and resolves (e.g., parties, clauses)
+  queryByTitle,          // <-- Pulls case summaries if title exists; fetches from MongoDB via BM25
   queryOpenAIEmbedding,  // <-- generates embedding for sentence/para/section based on query length, Intelligent embedding level based on input length
   maybeDynamicChunking,  // <-- Dynamic chunking happens here if needed
   hybridQueryController, // <-- combines BM25 + Pinecone (dense + sparse)

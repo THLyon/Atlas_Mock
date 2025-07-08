@@ -41,6 +41,6 @@ You are a legal NLP assistant. Given a user's query, determine if they are refer
 
   const first = result.choices[0];
   if (!first.message.content) throw new Error('Structured query extraction failed');
-
+  //console.log(`[OpenAI Chat Response] Final structured query:\n${first.message.content}`);
   return JSON.parse(first.message.content);
 };

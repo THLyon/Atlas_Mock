@@ -28,7 +28,7 @@ interface Chunk {
 }
 
 // ------------------------
-// Get a raw section by ID
+// QUERY-TIME CHUNKING: Get a raw section by ID 
 // ------------------------
 
 export const getRawSectionById = async (sectionId: string): Promise<string> => {

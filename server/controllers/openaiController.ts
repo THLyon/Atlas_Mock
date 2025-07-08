@@ -4,17 +4,34 @@ import { compressChunks } from '../services/promptCompressor.ts';
 import { getEmbeddingForText } from '../services/embeddingService.ts';
 import { extractStructuredQuery } from '../services/structuredQueryService.ts';
 import { chatWithOpenAI } from '../services/openaiChatService.ts';
-
+import { classifyQueryIntent } from '../services/queryClassifier.ts';
 
 export const queryOpenAIEmbedding: RequestHandler = async (req, res, next) => {
   try {
     const userQuery = req.body.userQuery;
     const structuredQuery = await extractStructuredQuery(userQuery);
-    const summaryToEmbed = structuredQuery.summaryToEmbed || userQuery;
+    const intent = classifyQueryIntent(userQuery);
+    // const summaryToEmbed = structuredQuery.summaryToEmbed || userQuery;
+    const summaryToEmbed =
+      intent === 'definition' || intent === 'fact'
+      ? userQuery
+      : structuredQuery.summaryToEmbed || userQuery;
 
-    const embedding = await getEmbeddingForText(summaryToEmbed);
+    console.log(`[Granularity Routing] Query: "${userQuery}" ➝ Intent: "${intent}"`);
 
-    res.locals.embedding = embedding;
+    // Set default strategy
+    let chunkingStrategy = 'paragraph';
+
+    // Override for narrow queries
+    if (intent === 'definition' || intent === 'fact') {
+      chunkingStrategy = 'sentence';
+    } else if (intent === 'summary' || intent === 'broad') {
+      chunkingStrategy = 'section';
+    }
+
+    res.locals.chunkingStrategy = chunkingStrategy;
+    res.locals.queryIntent = intent;
+    res.locals.embedding = await getEmbeddingForText(summaryToEmbed);
     res.locals.structuredQuery = structuredQuery;
 
     next();
@@ -102,7 +119,7 @@ You are a legal NLP assistant. Given a user's query, determine if they are refer
 };
 
 export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
-  const { userQuery, hybridResults } = res.locals;
+  const { userQuery, hybridResults, queryIntent } = res.locals;
   if (!userQuery || !hybridResults) {
     return next({
       log: 'queryOpenAIChat: Missing required context',
@@ -113,10 +130,16 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
 
   const texts = hybridResults.map((r: any) => r.text).filter(Boolean);
   let compressed = '';
+  const skipCompressionIntents = ['definition', 'fact'];
 
   try {
-    console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
-    compressed = await compressChunks(texts);
+    if (skipCompressionIntents.includes(queryIntent) && texts.join('').length < 1000) {
+      compressed = texts.join('\n'); // bypass compression for tight, short results
+      console.log(`[Prompt Compression] Skipped due to low intent/context size`);
+    } else {
+      console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
+      compressed = await compressChunks(texts);
+    }
   } catch (err) {
     return next({
       log: `queryOpenAIChat: compression failed: ${err}`,
@@ -126,14 +149,14 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   }
 
   const systemMessage = `
-You are a legal assistant that helps interpret legal queries using relevant case summaries.
-When given a user's query and a compressed legal summary, respond accurately with legal insight.
-Format response as: "[Case Name] - [One-sentence legal insight or relevance]"
+  You are a legal assistant that helps interpret legal queries using relevant case summaries.
+  When given a user's query and a compressed legal summary, respond accurately with legal insight.
+  Format response as: "[Case Name] - [One-sentence legal insight or relevance]"
   `.trim();
-
+  
   const userMessage = `
-User legal request: """${userQuery}"""
-Relevant legal summary: """${compressed}"""
+  User legal request: """${userQuery}"""
+  Relevant legal summary: """${compressed}"""
   `.trim();
 
   try {
@@ -150,7 +173,9 @@ Relevant legal summary: """${compressed}"""
         message: { err: 'OpenAI did not return a valid chat response' },
       });
     }
+
     console.log(`[OpenAI Chat Response] Final legal insight:\n${content}`);
+    console.log('[OpenAI Chat Prompt]', { systemMessage, userMessage });
     res.locals.legalAnswer = content;
     return next();
   } catch (err) {
@@ -161,4 +186,103 @@ Relevant legal summary: """${compressed}"""
     });
   }
 };
+
+
+
+
+
+
+
+
+
+/* 
+! =======================
+! old 
+! =======================
+*/
+
+// export const queryOpenAIEmbedding: RequestHandler = async (req, res, next) => {
+//   try {
+//     const userQuery = req.body.userQuery;
+//     const structuredQuery = await extractStructuredQuery(userQuery);
+//     const summaryToEmbed = structuredQuery.summaryToEmbed || userQuery;
+
+//     const embedding = await getEmbeddingForText(summaryToEmbed);
+
+//     res.locals.embedding = embedding;
+//     res.locals.structuredQuery = structuredQuery;
+
+//     next();
+//   } catch (error) {
+//     console.error('Error querying OpenAI embedding:', error);
+//     next({
+//       log: 'queryOpenAIEmbedding error: ' + error,
+//       status: 500,
+//       message: { err: 'Failed to generate embedding' },
+//     });
+//   }
+// };
+
+
+// export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
+//   const { userQuery, hybridResults } = res.locals;
+//   if (!userQuery || !hybridResults) {
+//     return next({
+//       log: 'queryOpenAIChat: Missing required context',
+//       status: 500,
+//       message: { err: 'Missing user query or retrieval results' },
+//     });
+//   }
+
+//   const texts = hybridResults.map((r: any) => r.text).filter(Boolean);
+//   let compressed = '';
+
+
+//   try {
+//     console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
+//     compressed = await compressChunks(texts);
+//   } catch (err) {
+//     return next({
+//       log: `queryOpenAIChat: compression failed: ${err}`,
+//       status: 500,
+//       message: { err: 'Failed to compress retrieved content' },
+//     });
+//   }
+
+//   const systemMessage = `
+// You are a legal assistant that helps interpret legal queries using relevant case summaries.
+// When given a user's query and a compressed legal summary, respond accurately with legal insight.
+// Format response as: "[Case Name] - [One-sentence legal insight or relevance]"
+//   `.trim();
+
+//   const userMessage = `
+// User legal request: """${userQuery}"""
+// Relevant legal summary: """${compressed}"""
+//   `.trim();
+
+//   try {
+//     const completion = await chatWithOpenAI({
+//       systemPrompt: systemMessage,
+//       userPrompt: userMessage,
+//     });
+
+//     const { content } = completion.choices[0].message;
+//     if (!content) {
+//       return next({
+//         log: 'queryOpenAIChat: No content returned',
+//         status: 500,
+//         message: { err: 'OpenAI did not return a valid chat response' },
+//       });
+//     }
+//     console.log(`[OpenAI Chat Response] Final legal insight:\n${content}`);
+//     res.locals.legalAnswer = content;
+//     return next();
+//   } catch (err) {
+//     return next({
+//       log: `queryOpenAIChat error: ${err}`,
+//       status: 500,
+//       message: { err: 'An error occurred during OpenAI chat completion' },
+//     });
+//   }
+// };
 

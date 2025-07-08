@@ -28,7 +28,7 @@ export const ingestChunks = async (
   }
 
   try {
-    // 🔹 Embed chunks using OpenAI
+    // Embed chunks using OpenAI
     const enrichedChunks = await Promise.all(
       chunks.map(async (chunk: any, i: number) => {
         if (!chunk?.text) {
@@ -65,7 +65,7 @@ export const ingestChunks = async (
       return;
     }
 
-    // 🔹 Format Pinecone vectors
+    // Format Pinecone vectors
     const pineconeVectors = validChunks.map(chunk => ({
       id: chunk.id,
       values: chunk.embedding,

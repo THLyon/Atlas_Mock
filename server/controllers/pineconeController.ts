@@ -33,30 +33,35 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
     return next(error);
   }
 
-  const queryText = structuredQuery?.summaryToEmbed || userQuery || '';
-  const granularity = selectGranularity(queryText);
+  const queryText = res.locals.rawQueryText || userQuery;
+
+  // Use classified intent-based granularity if available
+  const intentOverride = res.locals.chunkingStrategy as 'sentence' | 'paragraph' | 'section' | undefined;
+  const granularity = intentOverride || selectGranularity(queryText);
+  console.log('queryText', queryText)
   console.log(`[Granularity Selection] Using: ${granularity}-level embeddings for query length: ${queryText.length}`);
 
   const filter: Filter = { type: granularity };
 
   // Add structured filters if present
-  if (structuredQuery?.filters) {
-    const { jurisdiction, legalTopic, courtLevel } = structuredQuery.filters;
-    if (jurisdiction) filter.jurisdiction = jurisdiction;
-    if (legalTopic) filter.legalTopic = legalTopic;
-    if (courtLevel) filter.courtLevel = courtLevel;
-  }
+  // if (structuredQuery?.filters) {
+  //   const { jurisdiction, legalTopic, courtLevel } = structuredQuery.filters;
+  //   if (jurisdiction) filter.jurisdiction = jurisdiction;
+  //   if (legalTopic) filter.legalTopic = legalTopic;
+  //   if (courtLevel) filter.courtLevel = courtLevel;
+  // }
 
   try {
     const namespace = structuredQuery?.documentNamespace || 'sample_LPA';
-  
+    //console.log('[Debug] Embedding vector length:', embedding?.length);
+
     const result = await index.namespace(namespace).query({
       vector: embedding,
       topK: TOP_K,
       includeMetadata: true,
       filter,
     });
-  
+    console.log('[Sample Match Metadata]', result.matches?.[0]?.metadata);
     const matches = result.matches.filter((match) => {
       const { titleToFind } = structuredQuery || {};
       if (!titleToFind) return true;
@@ -76,3 +81,15 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
   
 };
 
+
+
+
+
+
+
+
+
+
+// const queryText = structuredQuery?.summaryToEmbed || userQuery || '';
+  // const granularity = selectGranularity(queryText);
+  // console.log(`[Granularity Selection] Using: ${granularity}-level embeddings for query length: ${queryText.length}`);

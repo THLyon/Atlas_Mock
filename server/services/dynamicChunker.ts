@@ -3,7 +3,7 @@ import path from 'path';
 
 export const dynamicChunkText = (text: string, query: string): Promise<string[]> => {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(__dirname, '../../python/dynamic_chunker.py');
+    const scriptPath = path.join(__dirname, '../../python/dynamic_chunker.py'); //! Interface Layer
     const pythonProcess = spawn('python3', [scriptPath]);
 
     const payload = JSON.stringify({ text, query });

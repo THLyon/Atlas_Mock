@@ -18,6 +18,7 @@ export const hybridQueryController: RequestHandler = async (req, res, next) => {
       (async () => {
         await queryPineconeDatabase(req, res, () => {});
         const pineconeRaw = res.locals.pineconeQueryResult || [];
+        // console.log("PINECONE RAW", pineconeRaw)
         return pineconeRaw.map((r: any) => ({
           ...r,
           source: 'dense', //  normalize Pinecone results
