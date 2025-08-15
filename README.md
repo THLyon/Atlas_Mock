@@ -67,4 +67,4 @@ All namespaces must be created manually by the user, ensuring a predictable and 
    - define feeder entity
    - What funding sources must be exhausted before requiring Limited Partners to return distributions?
    - define indemnification
-   - _feel free to run sections of the document in your favorite model to create a few questions for youself_
+   - _feel free to run sections of the document in your favorite model to create a few questions for youself
