@@ -49,7 +49,7 @@ All namespaces must be created manually by the user, ensuring a predictable and 
    - npm install
 ### 4. Set Up Python Environment for Chunker
    - cd python
-   - python -m venv venv
+   - python3 -m venv venv (alternitively 'python -m venv venv')
    - source venv/bin/activate  # Mac/Linux
    - venv\Scripts\activate     # Windows
    - pip install -r requirements.txt
@@ -69,3 +69,8 @@ All namespaces must be created manually by the user, ensuring a predictable and 
    - define feeder entity
    - define indemnification
    - _feel free to run sections of the document in your favorite model to create a few questions for youself
+
+### General Notes: 
+   - logs intentionally left in; see console logs in terminal for data at each stage of pipeline 
+   - see flattened_chunks.json in root for chunking output based on semantic driven chunker. Tokens are estimated based on gpt-3.5-turbo
+   - see pipeline_diagrams for markdown diagrams of ingestion/query pipelines
