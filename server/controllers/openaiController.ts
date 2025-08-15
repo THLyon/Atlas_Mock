@@ -14,10 +14,12 @@ export const queryOpenAIEmbedding: RequestHandler = async (req, res, next) => {
     // const summaryToEmbed = structuredQuery.summaryToEmbed || userQuery;
     const summaryToEmbed =
       intent === 'definition' || intent === 'fact'
-      ? userQuery
-      : structuredQuery.summaryToEmbed || userQuery;
+        ? userQuery
+        : structuredQuery.summaryToEmbed || userQuery;
 
-    console.log(`[Granularity Routing] Query: "${userQuery}" ➝ Intent: "${intent}"`);
+    console.log(
+      `[Granularity Routing] Query: "${userQuery}" ➝ Intent: "${intent}"`
+    );
 
     // Set default strategy
     let chunkingStrategy = 'paragraph';
@@ -133,11 +135,18 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   const skipCompressionIntents = ['definition', 'fact'];
 
   try {
-    if (skipCompressionIntents.includes(queryIntent) && texts.join('').length < 1000) {
+    if (
+      skipCompressionIntents.includes(queryIntent) &&
+      texts.join('').length < 1000
+    ) {
       compressed = texts.join('\n'); // bypass compression for tight, short results
-      console.log(`[Prompt Compression] Skipped due to low intent/context size`);
+      console.log(
+        `[Prompt Compression] Skipped due to low intent/context size`
+      );
     } else {
-      console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
+      console.log(
+        `[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`
+      );
       compressed = await compressChunks(texts);
     }
   } catch (err) {
@@ -153,7 +162,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   When given a user's query and a compressed legal summary, respond accurately with legal insight.
   Format response as: "[Case Name] - [One-sentence legal insight or relevance]"
   `.trim();
-  
+
   const userMessage = `
   User legal request: """${userQuery}"""
   Relevant legal summary: """${compressed}"""
@@ -187,14 +196,6 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   }
 };
 
-
-
-
-
-
-
-
-
 /* 
 ! =======================
 ! old 
@@ -223,7 +224,6 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
 //   }
 // };
 
-
 // export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
 //   const { userQuery, hybridResults } = res.locals;
 //   if (!userQuery || !hybridResults) {
@@ -236,7 +236,6 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
 
 //   const texts = hybridResults.map((r: any) => r.text).filter(Boolean);
 //   let compressed = '';
-
 
 //   try {
 //     console.log(`[Prompt Compression] Compressing ${texts.length} chunks before chat completion...`);
@@ -285,4 +284,3 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
 //     });
 //   }
 // };
-
