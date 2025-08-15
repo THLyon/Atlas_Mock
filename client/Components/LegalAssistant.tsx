@@ -1,4 +1,3 @@
-// client/Components/LegalAssistant.tsx
 import React, { useState } from 'react';
 
 interface ParsedResponse {

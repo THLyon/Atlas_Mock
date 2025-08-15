@@ -2,24 +2,21 @@ import express, { ErrorRequestHandler, Request, Response  } from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import fs from 'fs';
-
-// import { addReqId } from './logger.js';
-import 'dotenv/config';
 import { parseUserQuery } from './controllers/userQueryController.ts';
 import {
   queryOpenAIParse,
   queryOpenAIEmbedding,
   queryOpenAIChat,
 } from './controllers/openaiController.ts';
-import { queryPineconeDatabase } from './controllers/pineconeController.ts';
 import { queryByTitle } from './controllers/mongoController.ts';
-// import { logQuery } from './controllers/loggingController.js';
 import { ingestChunks } from './controllers/ingestController.ts';
 import {chunkAndEmbed} from './controllers/chunkAndEmbedController.ts'
 import {hybridQueryController} from './controllers/hybridQueryController.ts'
 import { handleQueryWithDynamicChunking } from './controllers/dynamicChunkingController.ts'
 import { ensureTextIndexOnChunks } from './models/mongoModel.ts';
 import { maybeDynamicChunking } from './controllers/dynamicChunkingMiddleware.ts';
+//import { queryPineconeDatabase } from './controllers/pineconeController.ts';
+// import { logQuery } from './controllers/loggingController.js';
 
 
 
@@ -53,20 +50,6 @@ app.post(
   }
 );
 
-app.post('/dynamic-query', async (req: Request, res: Response, next) => {
-  try {
-    await handleQueryWithDynamicChunking(req, res); // <-- dynamically chunks section based on query & intent, / <-- routes based on `definition` | `summary` | `broad`
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
-  res.status(200).json({ msg: 'Made it through all middlewares' });
-});
-
-
-
 app.get('/debug-ingest', async (_req, res) => {
   try {
     const raw = fs.readFileSync('./flattened_chunks.json', 'utf-8');
@@ -87,6 +70,18 @@ app.get('/debug-ingest', async (_req, res) => {
     console.error('Manual run failed:', err);
     res.status(500).json({ error: 'Manual run failed' });
   }
+});
+
+app.post('/dynamic-query', async (req: Request, res: Response, next) => {
+  try {
+    await handleQueryWithDynamicChunking(req, res); // <-- dynamically chunks section based on query & intent, / <-- routes based on `definition` | `summary` | `broad`
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/ingest', chunkAndEmbed, ingestChunks, (_req, res) => {
+  res.status(200).json({ msg: 'Made it through all middlewares' });
 });
 
 const errorHandler: ErrorRequestHandler = (

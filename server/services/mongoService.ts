@@ -27,9 +27,9 @@ interface Chunk {
   nextChunkId?: string;
 }
 
-// ------------------------
+// ----------------------------------------------
 // QUERY-TIME CHUNKING: Get a raw section by ID 
-// ------------------------
+// ----------------------------------------------
 
 export const getRawSectionById = async (sectionId: string): Promise<string> => {
   const db = await getDb();
@@ -37,9 +37,9 @@ export const getRawSectionById = async (sectionId: string): Promise<string> => {
   return doc?.text || '';
 };
 
-// ------------------------
+// ---------------------------
 // Upsert Chunks to MongoDB
-// ------------------------
+// ---------------------------
 
 export async function upsertChunksToMongo(documentId: string, chunks: Chunk[]) {
   if (!chunks || chunks.length === 0) {
@@ -62,9 +62,9 @@ export async function upsertChunksToMongo(documentId: string, chunks: Chunk[]) {
   console.log(`[mongoService] Upserted ${result.upsertedCount + result.modifiedCount} chunks into MongoDB`);
 }
 
-// ------------------------
+// -----------------------------------
 // Upsert Raw Sections to MongoDB
-// ------------------------
+// -----------------------------------
 
 export async function upsertRawSectionsToMongo(documentId: string, sections: RawSection[]) {
   if (!sections || sections.length === 0) {
@@ -87,9 +87,9 @@ export async function upsertRawSectionsToMongo(documentId: string, sections: Raw
   console.log(`[mongoService] Upserted ${result.upsertedCount + result.modifiedCount} raw sections into MongoDB`);
 }
 
-// ------------------------
+// --------------------------------------
 // Upsert Embedded Sections to MongoDB
-// ------------------------
+// --------------------------------------
 
 export async function upsertEmbeddedSectionsToMongo(documentId: string, sections: RawSection[]) {
   const enrichedSections = sections.filter(s => s.embedding && Array.isArray(s.embedding));

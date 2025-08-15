@@ -1,4 +1,3 @@
-// server/controllers/dynamicChunkingMiddleware.ts
 import { RequestHandler } from 'express';
 import { getRawSectionById } from '../services/mongoService.ts';
 import { dynamicChunkText } from '../services/dynamicChunker.ts';

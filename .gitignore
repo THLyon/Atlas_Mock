@@ -34,8 +34,22 @@ __pycache__/
 # Local artifacts
 uploads/
 chunk_output.json
-flattened_chunks.json
-flattened_chunks.json
 upsert-batch.ts
 offline/
 scripts_remember.md 
+pseudo.md# --- Harden ignores ---
+# Node
+node_modules/
+**/node_modules/
+
+# Python venvs
+.venv/
+venv/
+**/venv/
+**/.venv/
+
+# Editor & OS
+.DS_Store
+
+# Build outputs
+*.log
