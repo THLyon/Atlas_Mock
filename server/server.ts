@@ -16,7 +16,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 
-  // safely invoke async logic
   ensureTextIndexOnChunks()
     .then(() => {
       console.log('[Startup] Text index ensured on MongoDB');

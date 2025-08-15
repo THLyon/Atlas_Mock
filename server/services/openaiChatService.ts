@@ -1,4 +1,3 @@
-// server/services/openaiChatService.ts
 import { openai } from '../utils/openaiClient.ts';
 
 interface ChatParams {

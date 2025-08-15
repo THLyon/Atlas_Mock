@@ -1,5 +1,5 @@
 {
-  "name": "unit-ai-2-rag",
+  "name": "atlas-mock",
   "version": "1.0.0",
   "description": "",
   "main": "./client/App.tsx",

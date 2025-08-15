@@ -63,6 +63,7 @@ All namespaces must be created manually by the user, ensuring a predictable and 
        MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
 ### 6. Start the Server
    - npm start
+   - frontend will be seen on localhost:8080 (3000 will confirm server is running)
 ### 7. Try questions like: 
    - define feeder entity
    - What funding sources must be exhausted before requiring Limited Partners to return distributions?

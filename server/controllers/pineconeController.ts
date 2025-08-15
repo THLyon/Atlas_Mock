@@ -1,4 +1,4 @@
-import { Pinecone, QueryOptions } from '@pinecone-database/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
 import { RequestHandler } from 'express';
 import { ServerError, LegalMetadata } from '../../types/types';
 
@@ -43,14 +43,6 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
 
   const filter: Filter = { type: granularity };
 
-  // Add structured filters if present
-  // if (structuredQuery?.filters) {
-  //   const { jurisdiction, legalTopic, courtLevel } = structuredQuery.filters;
-  //   if (jurisdiction) filter.jurisdiction = jurisdiction;
-  //   if (legalTopic) filter.legalTopic = legalTopic;
-  //   if (courtLevel) filter.courtLevel = courtLevel;
-  // }
-
   try {
     const namespace = structuredQuery?.documentNamespace || 'sample_LPA';
     //console.log('[Debug] Embedding vector length:', embedding?.length);
@@ -80,16 +72,3 @@ export const queryPineconeDatabase: RequestHandler = async (_req, res, next) => 
   }
   
 };
-
-
-
-
-
-
-
-
-
-
-// const queryText = structuredQuery?.summaryToEmbed || userQuery || '';
-  // const granularity = selectGranularity(queryText);
-  // console.log(`[Granularity Selection] Using: ${granularity}-level embeddings for query length: ${queryText.length}`);
