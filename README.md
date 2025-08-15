@@ -64,8 +64,8 @@ All namespaces must be created manually by the user, ensuring a predictable and 
 ### 6. Start the Server
    - npm start
    - frontend will be seen on localhost:8080 (3000 will confirm server is running)
-### 7. Try questions like: 
-   - define feeder entity
+### 7. Try questions like:
    - What funding sources must be exhausted before requiring Limited Partners to return distributions?
+   - define feeder entity
    - define indemnification
    - _feel free to run sections of the document in your favorite model to create a few questions for youself
